@@ -12,6 +12,7 @@ final class FilterViewModel {
     var responseData: [FilterResponseData] = [] // Array to hold the response result
     var isLoading: Bool = false  // Loading state
     var errorMessage: String? = nil // Error state
+    var isFirstRequest: Bool = true // Request status
     
     // State variables for the two fields
     var companyName: String = ""
@@ -20,7 +21,8 @@ final class FilterViewModel {
     // Async function to fetch response
     func fetchData() async {
         isLoading = true
-        guard let url = URL(string: "https://cba.kooijmans.nl/CBAEmployerservice.svc/rest/employers?filter=Ac&maxRows=100") else {
+        isFirstRequest = false
+        guard let url = URL(string: "https://cba.kooijmans.nl/CBAEmployerservice.svc/rest/employers?filter=\(companyName)&maxRows=\(limitOfrecords)") else {
             errorMessage = "Invalid URL."
             isLoading = false
             return
