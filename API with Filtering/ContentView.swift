@@ -9,8 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-//    @Environment(\.modelContext) private var modelContext
-//    @Query private var items: [Item]
+    @Environment(\.modelContext) private var modelContext
+    @Query private var items: [RequestItem]
     
     @State private var viewModel = FilterViewModel()
     
@@ -65,7 +65,7 @@ struct ContentView: View {
         
         Button(action: {
             Task {
-                await viewModel.fetchData()
+                await viewModel.fetchData(context: modelContext)
             }
         }) {
             Text("Fetch Data")
@@ -130,5 +130,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-//        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: RequestItem.self, inMemory: true)
 }
