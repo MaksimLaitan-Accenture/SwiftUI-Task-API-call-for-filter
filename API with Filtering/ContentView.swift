@@ -9,47 +9,59 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+//    @Environment(\.modelContext) private var modelContext
+//    @Query private var items: [Item]
 
+    @State private var responseData: [FilterResponseData] = [] // Array to hold the response result
+    @State private var isLoading: Bool = true  // Loading state
+    @State private var errorMessage: String? = nil // Error state
+    
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+        NavigationView {
+            ScrollView {
+                if isLoading {
+                    ProgressView("Fetching Data...")
+                        .padding()
+                } else if let errorMessage = errorMessage {
+                    Text("Error: \(errorMessage)")
+                        .foregroundColor(.red)
+                        .padding()
+                } else {
+                    ForEach(responseData) { data in
+                        GroupBox(label: Text("Response Data")) {
+                            Text(data.name)
+                                .padding()
+                        }
+                        .padding()
                     }
                 }
             }
-        } detail: {
-            Text("Select an item")
+            .navigationTitle("Filter Data")
+        }
+        .task {
+            await fetchData()
         }
     }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
+    
+    // Async function to fetch response
+    private func fetchData() async {
+        guard let url = URL(string: "https://cba.kooijmans.nl/CBAEmployerservice.svc/rest/employers?filter=Achmea&maxRows=100") else {
+            errorMessage = "Invalid URL."
+            isLoading = false
+            return
         }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let decodedData = try JSONDecoder().decode([FilterResponseData].self, from: data)
+            DispatchQueue.main.async {
+                responseData = decodedData
+                isLoading = false
+            }
+        } catch {
+            DispatchQueue.main.async {
+                errorMessage = "Failed to fetch data: \(error.localizedDescription)"
+                isLoading = false
             }
         }
     }
@@ -57,5 +69,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+//        .modelContainer(for: Item.self, inMemory: true)
 }
