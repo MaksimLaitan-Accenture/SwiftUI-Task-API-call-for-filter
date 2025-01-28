@@ -34,25 +34,18 @@ final class FilterViewModel {
             return
         }
         
-        guard let url = URL(string: "https://cba.kooijmans.nl/CBAEmployerservice.svc/rest/employers?filter=\(companyName)&maxRows=\(limitOfrecords)") else {
-            errorMessage = "Invalid URL."
-            isLoading = false
-            return
-        }
-        
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let decodedData = try JSONDecoder().decode([FilterResponseData].self, from: data)
-            Task {
-                responseData = decodedData
-                cachedDataManager.saveData(requestKey: [companyName : limitOfrecords], responseData: decodedData, context: context)
-                isLoading = false
-            }
+            responseData = try await FilterDataManager().getFilteredData(for: companyName, with: limitOfrecords)
+            
+            cachedDataManager.saveData(requestKey: [companyName : limitOfrecords], responseData: responseData, context: context)
+            isLoading = false
+        }
+        catch let error as APIError {
+            errorMessage = error.errorDescription
+            isLoading = false
         } catch {
-            Task {
-                errorMessage = "Failed to fetch data: \(error.localizedDescription)"
-                isLoading = false
-            }
+            errorMessage = error.localizedDescription
+            isLoading = false
         }
     }
 }
