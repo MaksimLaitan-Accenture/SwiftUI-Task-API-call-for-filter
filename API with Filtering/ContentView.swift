@@ -11,14 +11,8 @@ import SwiftData
 struct ContentView: View {
 //    @Environment(\.modelContext) private var modelContext
 //    @Query private var items: [Item]
-
-    @State private var responseData: [FilterResponseData] = [] // Array to hold the response result
-    @State private var isLoading: Bool = false  // Loading state
-    @State private var errorMessage: String? = nil // Error state
     
-    // State variables for the two fields
-    @State private var companyName: String = ""
-    @State private var limitOfrecords: String = ""
+    @State private var viewModel = FilterViewModel()
     
     let formatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -30,46 +24,45 @@ struct ContentView: View {
         NavigationView {
             VStack(spacing: 0) {
                 VStack(spacing: 10) {
-                    TextField("Enter Company name", text: $companyName)
+                    TextField("Enter Company name", text: $viewModel.companyName)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding(.horizontal)
                     
-                    TextField("Enter limit of records", value: $limitOfrecords, formatter: formatter)
+                    TextField("Enter limit of records", value: $viewModel.limitOfrecords, formatter: formatter)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding(.horizontal)
                     
                     Button(action: {
                         Task {
-                            await fetchData()
+                            await viewModel.fetchData()
                         }
                     }) {
                         Text("Fetch Data")
                     }
                     .buttonStyle(.borderedProminent)
                     .padding(.top, 2)
-                    .disabled(isLoading)
+                    .disabled(viewModel.isLoading)
                 }
-                .padding(.vertical) // Add vertical padding for spacing
+                .padding(.bottom) // Add vertical padding for spacing
                 
                 Divider()
                 
+                if (!viewModel.isLoading && viewModel.responseData.isEmpty && viewModel.companyName.isEmpty && viewModel.limitOfrecords.isEmpty) {
+                    Text("Please enter Company name and limit of response records")
+                        .font(.callout)
+                        .padding(40)
+                        .multilineTextAlignment(.center)
+                } else if viewModel.isLoading {
+                    ProgressView("Fetching Data...")
+                        .padding()
+                } else if let errorMessage = viewModel.errorMessage {
+                    Text("Error: \(errorMessage)")
+                        .foregroundColor(.red)
+                        .padding()
+                } else {
+                
                 ScrollView {
-                    if (!isLoading && responseData.isEmpty && companyName.isEmpty && limitOfrecords.isEmpty) {
-                        Text("Please enter Company name and limit of response records")
-                            .font(.callout)
-                            .padding(40)
-                            .multilineTextAlignment(.center)
-                    }
-                    
-                    if isLoading {
-                        ProgressView("Fetching Data...")
-                            .padding()
-                    } else if let errorMessage = errorMessage {
-                        Text("Error: \(errorMessage)")
-                            .foregroundColor(.red)
-                            .padding()
-                    } else {
-                        ForEach(responseData) { data in
+                        ForEach(viewModel.responseData) { data in
                             GroupBox {
                                 HStack {
                                     VStack(alignment: .leading) {
@@ -88,36 +81,15 @@ struct ContentView: View {
                         }
                     }
                 }
-                .navigationTitle("Filter Data")
-                .navigationBarTitleDisplayMode(.inline)
+                
+                Spacer()
             }
+            .navigationTitle("Filter Data")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
     
-    // Async function to fetch response
-    private func fetchData() async {
-        isLoading = true
-        guard let url = URL(string: "https://cba.kooijmans.nl/CBAEmployerservice.svc/rest/employers?filter=Ac&maxRows=100") else {
-            errorMessage = "Invalid URL."
-            isLoading = false
-            return
-        }
-        
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let decodedData = try JSONDecoder().decode([FilterResponseData].self, from: data)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-//            DispatchQueue.main.async {
-                responseData = decodedData
-                isLoading = false
-            }
-        } catch {
-            DispatchQueue.main.async {
-                errorMessage = "Failed to fetch data: \(error.localizedDescription)"
-                isLoading = false
-            }
-        }
-    }
+
 }
 
 #Preview {
