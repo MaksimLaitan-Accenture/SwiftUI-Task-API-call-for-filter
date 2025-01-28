@@ -28,11 +28,21 @@ struct ContentView: View {
                         .padding()
                 } else {
                     ForEach(responseData) { data in
-                        GroupBox(label: Text("Response Data")) {
+                        GroupBox {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text("ID: \(data.employerID)")
+                                    Text("Discount: \(data.discountPercentage)%")
+                                    Text("Place: \(data.place)")
+                                }
+                                .padding(.top, 3)
+                                Spacer()
+                            }
+                        } label: {
                             Text(data.name)
-                                .padding()
                         }
-                        .padding()
+                        .padding(.bottom, 3)
+                        .padding(.horizontal)
                     }
                 }
             }
