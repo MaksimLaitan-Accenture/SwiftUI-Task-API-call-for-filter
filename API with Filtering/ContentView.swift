@@ -44,18 +44,18 @@ struct ContentView: View {
                 
                 Spacer()
             }
-            .navigationTitle("Filter Data")
+            .navigationTitle(C.Filter.navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
         }
     }
     
     @ViewBuilder
     private func filterFieldsView() -> some View {
-        TextField("Enter Company name", text: $viewModel.companyName)
+        TextField(C.Filter.companyFieldPlaceholder, text: $viewModel.companyName)
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .padding(.horizontal)
         
-        TextField("Enter limit of records (default is 0)", text: $viewModel.limitOfrecords)
+        TextField(C.Filter.limitFieldPlaceholder, text: $viewModel.limitOfrecords)
             .keyboardType(.numberPad)
             .onChange(of: viewModel.limitOfrecords) { _, newValue in
                 viewModel.limitOfrecords = newValue.filter { $0.isNumber }
@@ -68,7 +68,7 @@ struct ContentView: View {
                 await viewModel.fetchData(context: modelContext)
             }
         }) {
-            Text("Fetch Data")
+            Text(C.Filter.actionButtonText)
         }
         .buttonStyle(.borderedProminent)
         .padding(.top, 2)
@@ -77,13 +77,13 @@ struct ContentView: View {
     
     @ViewBuilder
     private func loadingView() -> some View {
-        ProgressView("Fetching Data...")
+        ProgressView(C.Filter.progressText)
             .padding()
     }
     
     @ViewBuilder
     private func initialPlaceholder() -> some View {
-        Text("Please enter Company name and limit of response records. \nAnd press \"Fetch Data\" button. \n(Default limit is 0, which means all records)")
+        Text(C.Filter.initialPlaceholder)
             .font(.callout)
             .padding(40)
             .multilineTextAlignment(.center)
@@ -91,7 +91,7 @@ struct ContentView: View {
     
     @ViewBuilder
     private func errorMessageView(message errorMessage: String) -> some View {
-        Text("Error: \(errorMessage)")
+        Text(C.Filter.errorMessage(errorMessage))
             .foregroundColor(.red)
             .padding()
     }
@@ -103,9 +103,9 @@ struct ContentView: View {
                     GroupBox {
                         HStack {
                             VStack(alignment: .leading) {
-                                Text("ID: \(data.employerID)")
-                                Text("Discount: \(data.discountPercentage)%")
-                                Text("Place: \(data.place)")
+                                Text(C.Filter.employerIdText(data.employerID))
+                                Text(C.Filter.discountPercentageText(data.discountPercentage))
+                                Text(C.Filter.placeText(data.place))
                             }
                             .padding(.top, 3)
                             Spacer()
@@ -121,7 +121,7 @@ struct ContentView: View {
     
     @ViewBuilder
     private func emptyrResultView() -> some View {
-        Text("Nothing was found by your filter input. \nCheck input data or try another data.")
+        Text(C.Filter.emptyResultText)
             .font(.callout)
             .padding(40)
             .multilineTextAlignment(.center)

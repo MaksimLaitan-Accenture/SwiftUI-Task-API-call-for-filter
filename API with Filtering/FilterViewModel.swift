@@ -17,8 +17,8 @@ final class FilterViewModel {
     var isFirstRequest: Bool = true // Request status
     
     // State variables for the two fields
-    var companyName: String = ""
-    var limitOfrecords: String = ""
+    var companyName: String = C.emptyString
+    var limitOfrecords: String = C.emptyString
     
     private let cachedDataManager = CachedDataManager()
     

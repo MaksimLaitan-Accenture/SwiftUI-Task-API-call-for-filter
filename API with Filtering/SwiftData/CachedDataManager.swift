@@ -28,7 +28,7 @@ final class CachedDataManager {
         do {
             try context.save()
         } catch {
-            print("Error saving data: \(error)")
+            print(C.Network.Error.errorSavingData(error))
         }
     }
 }

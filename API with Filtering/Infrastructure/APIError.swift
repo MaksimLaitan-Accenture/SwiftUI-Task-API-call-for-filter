@@ -18,15 +18,15 @@ enum APIError: Error {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "The provided URL is invalid."
+            C.Network.Error.invalidURL
         case .invalidResponse:
-            return "The server response was invalid."
+            C.Network.Error.invalidResponse
         case .httpError(let statusCode):
-            return "HTTP error occurred with status code \(statusCode)."
+            C.Network.Error.httpError(statusCode)
         case .decodingError:
-            return "Failed to decode the response from the server."
+            C.Network.Error.decodingError
         case .unknownError:
-            return "An unknown error occurred."
+            C.Network.Error.unknownError
         }
     }
 }
